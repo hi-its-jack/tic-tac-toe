@@ -1,15 +1,14 @@
 // GAMEBOARD OBJECT
 const Gameboard = (() => {
-    let board = ["", "", "", "", "", "", "", "", ""];  
+    let board = ["", "", "", "", "", "", "", "", ""];
 
     const getBoard = () => board;
 
     const updateBoard = (index, marker) => {
-        if (board[index] === "") {  
+        if (board[index] === "") {
             board[index] = marker;
             return true;  
         }
-        alert("This is already taken!");
         return false;  
     };
 
@@ -22,18 +21,25 @@ const Gameboard = (() => {
 
 // PLAYER OBJECT
 const Player = (name, marker) => {
-    return { name, marker };  
+    let score = 0;  
+    const addWin = () => {
+        score += 1;
+    };
+    const getScore = () => score;
+    return { name, marker, addWin, getScore };
 };
 
 // GAMEPLAY OBJECT
 const Gameplay = (() => {
     let players = [];
     let playerTurn = 0;
-    let gameActive = true;  
+    let gameActive = true;
 
     const boxes = document.querySelectorAll('.box');
     const commentary = document.getElementById('commentary');
     const restartButton = document.getElementById('restart-button');
+    const player1ScoreDisplay = document.getElementById('player1-score');
+    const player2ScoreDisplay = document.getElementById('player2-score');
 
     const setupGame = (player1Name, player2Name) => {
         players = [Player(player1Name, "X"), Player(player2Name, "O")];
@@ -41,13 +47,8 @@ const Gameplay = (() => {
         gameActive = true;
         Gameboard.resetBoard();
         updateBoardDisplay();
+        updateScoreDisplay();
         commentary.textContent = `${players[playerTurn].name}'s turn!`;
-
-        boxes.forEach((box, index) => {
-            box.addEventListener('click', () => handleBoxClick(index));
-        });
-
-        restartButton.addEventListener('click', restartGame);
     };
 
     const currentPlayerTurn = () => players[playerTurn];
@@ -65,11 +66,13 @@ const Gameplay = (() => {
             updateBoardDisplay();
 
             if (checkWinner(currentPlayer.marker)) {
+                currentPlayer.addWin();  
+                updateScoreDisplay();    
                 commentary.textContent = `${currentPlayer.name} wins!`;
-                gameActive = false;  
+                gameActive = false;
             } else if (checkDraw()) {
                 commentary.textContent = "It's a tie!";
-                gameActive = false;  
+                gameActive = false;
             } else {
                 switchPlayers();
                 commentary.textContent = `${players[playerTurn].name}'s turn!`;
@@ -82,6 +85,11 @@ const Gameplay = (() => {
         boxes.forEach((box, index) => {
             box.textContent = board[index];
         });
+    };
+
+    const updateScoreDisplay = () => {
+        player1ScoreDisplay.textContent = `${players[0].name}: ${players[0].getScore()}`;
+        player2ScoreDisplay.textContent = `${players[1].name}: ${players[1].getScore()}`;
     };
 
     const checkDraw = () => {
@@ -109,6 +117,11 @@ const Gameplay = (() => {
         commentary.textContent = `${players[playerTurn].name}'s turn!`;
     };
 
-    // Start the game
-    setupGame('Player 1', 'Player 2');  
+    boxes.forEach((box, index) => {
+        box.addEventListener('click', () => handleBoxClick(index));
+    });
+
+    restartButton.addEventListener('click', restartGame);
+
+    setupGame('Player 1', 'Player 2');
 })();
